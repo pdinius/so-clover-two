@@ -1,0 +1,353 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500&family=Roboto:wght@300;500;700;900&display=swap');
+
+:root {
+    /* --color-tone-1: #F0F0F0;
+    --color-tone-2: #f1d00a;
+    --color-tone-3: #3E497A;
+    --color-tone-4: #21325E;
+    --color-tone-5: #f1e392; */
+    /* --color-tone-1: #ACFFAD;
+    --color-tone-2: #71EFA3;
+    --color-tone-3: #50CB93;
+    --color-tone-4: #827397;
+    --color-tone-5: #c1b7d3; */
+    --color-tone-1: #B8E4F0;
+    --color-tone-2: #98BAE7;
+    --color-tone-3: #7267CB;
+    --color-tone-4: #6E3CBC;
+    --card-width: 16em;
+    --error-background-color: #E8BCBC;
+    --error-underline: #E79898;
+    --error-text-color: #A25454;
+}
+
+* {
+    font-family: 'Roboto';
+}
+
+body, html {
+    color: var(--color-tone-4);
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--color-tone-1);
+    /* background-image: linear-gradient(-45deg, var(--color-tone-2), var(--color-tone-1)); */
+}
+
+/* header and footer */
+.top-bar, .bottom-bar {
+    display: flex;
+    justify-content: center;
+    background-color: var(--color-tone-4);
+    padding: 0.25em 0;
+}
+
+.bottom-bar {
+    padding: 1em 0;
+}
+
+.title-text, .copyright-text {
+    font-size: 2.5em;
+    font-family: 'Roboto Slab';
+    color: var(--color-tone-1);
+}
+
+.copyright-text {
+    font-size: 1.5em;
+}
+
+/* main area */
+
+.alert-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 4em;
+    color: var(--color-tone-3);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.lower-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+}
+
+.game-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    margin-bottom: 2em;
+}
+
+.left-spacer, .right-spacer {
+    display: flex;
+    flex-grow: 1;
+    flex-basis: 0;
+    padding: 3em;
+}
+
+.extra-card-container {
+    justify-content: flex-end;
+}
+
+.right-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+button {
+    background-color: var(--color-tone-2);
+    color: var(--color-tone-3);
+    padding: 0.5em 1em;
+    margin-top: 1em;
+    border: 0;
+    border-radius: 0.25em;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background-color: var(--color-tone-3);
+    color: var(--color-tone-1);
+    cursor: pointer;
+}
+
+button:active {
+    background-color: var(--color-tone-4);
+}
+
+.join-game-button, .name-input-container {
+    margin: 0 auto;
+}
+
+.reconnect-buttons {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    margin: 1em auto 0;
+    padding: 1em;
+    border-top: 2px solid var(--color-tone-3);
+}
+
+.reconnect-as-button {
+    margin: 0 auto;
+}
+
+.reconnect-buttons > button {
+    margin-top: 1em;
+}
+
+.name-input-container {
+    margin-bottom: 1em;
+}
+
+.card-rotate-button {
+    height: 3em;
+    width: 3em;
+    color: var(--color-tone-3);
+    transition: color 0.1s;
+}
+
+.card-rotate-button:hover {
+    color: var(--color-tone-2);
+    cursor: pointer;
+}
+
+.clover {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: space-between;
+    max-width: calc(var(--card-width) * 2 + var(--card-width) / 12);
+    height: calc(var(--card-width) * 2 + var(--card-width) / 12);
+    margin: 2em;
+    z-index: 1;
+}
+
+.clover-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 2.35em;
+}
+
+input {
+    width: 20em;
+    padding: 0.5em;
+    border: 0;
+    outline: 0;
+    color: var(--color-tone-4);
+    border-bottom: 2px solid var(--color-tone-2);
+}
+
+.bottom-line {
+    position: relative;
+}
+
+.bottom-line::after {
+    content: "";
+    position: absolute;
+    display: inline-block;
+    height: 2px;
+    width: 0%;
+    background-color: var(--color-tone-4);
+    left: 0;
+    bottom: 0;
+    transition: width 0.3s ease-out;
+}
+
+.bottom-line-full::after {
+    width: 100%;
+}
+
+.left-right-inputs {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    transform: rotate(90deg);
+}
+
+/* card stuff */
+
+.card, .left-right-card {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--card-width);
+    width: var(--card-width);
+    background-color: var(--color-tone-3);
+    border-radius: 0.5em;
+}
+
+.left-right-card {
+    position: absolute;
+    background-color: transparent;
+    transform: rotate(90deg);
+}
+
+.word {
+    margin: 0.75em 0;
+    width: calc(var(--card-width) * 0.5);
+    text-align: center;
+    font-size: 1.5em;
+    color: var(--color-tone-1);
+    text-shadow: 0 0 1em var(--color-tone-1);
+    user-select: none;
+}
+
+.flip {
+    transform: rotate(180deg);
+}
+
+.error-input {
+    border-bottom-color: var(--error-underline);
+    background-color: var(--error-background-color);
+    color: var(--error-text-color);
+}
+
+.blank-card {
+    background-color: transparent;
+    border: 2px dashed var(--color-tone-4);
+    height: calc(var(--card-width) - 2px);
+    width: calc(var(--card-width) - 2px);
+}
+
+.transitions {
+    transition: all 0.2s;
+}
+
+/* Waiting Area */
+
+.waiting {
+    padding: 2em;
+}
+
+.waiting-on {
+    background-color: var(--color-tone-2);
+    padding: 0.5em 1em;
+    margin: 0 0.5em;
+    border-radius: 2em;
+    transition: all 0.5s;
+}
+
+.not-waiting-on {
+    text-shadow: 0 0 1em var(--color-tone-1);
+    color: var(--color-tone-1);
+    background-color: var(--color-tone-3);
+}
+
+.loading-anim {
+    display: flex;
+    align-items: center;
+    height: 3em;
+}
+
+.loading-bar {
+    width: 4px;
+    height: 1.5em;
+    margin: 0 0.125em;
+    background-color: var(--color-tone-4);
+    border-radius: 2px;
+    transition: height 0.4s;
+}
+
+/* Guessing styles */
+
+.clover-clue {
+    background-image: linear-gradient(to right, var(--color-tone-1), var(--color-tone-2), var(--color-tone-1));
+    padding: 0.25em 5em;
+    font-size: 2em;
+    font-family: 'Roboto Slab';
+}
+
+.unplaced-cards > .card {
+    margin: 0 0.5em;
+}
+
+.corner-arrow {
+    color: var(--color-tone-3);
+    height: 2em;
+    transition: color 0.1s;
+    position: absolute;
+}
+
+.corner-arrow:hover {
+    cursor: pointer;
+    color: var(--color-tone-2);
+}
+
+.top-left-arrow {
+    top: 2.5em;
+    left: 2.5em;
+}
+
+.top-right-arrow {
+    top: 2.5em;
+    right: 2.5em;
+    transform: rotate(90deg);
+}
+
+.bottom-left-arrow {
+    bottom: 2.5em;
+    left: 2.5em;
+    transform: rotate(270deg);
+}
+
+.bottom-right-arrow {
+    bottom: 2.5em;
+    right: 2.5em;
+    transform: rotate(180deg);
+}
