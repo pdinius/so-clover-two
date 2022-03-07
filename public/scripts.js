@@ -200,8 +200,8 @@ $(function () {
 
     function redrawClover() {
         $('.lower-container').html(makeCard(cards, clues))
-        updateButtons(makeCard)
-        animateInputs(redrawClover)
+        updateButtons(redrawClover)
+        animateInputs()
     }
 
     function swapCards(cardA, cardB, cardAOffset = $(cardA).offset(), cardBOffset = $(cardB).offset()) {
@@ -390,6 +390,7 @@ $(function () {
     })
 
     socket.on('send-clover', clover => {
+        guessData = undefined
         cards = clover
         redrawClover()
     })
@@ -422,20 +423,4 @@ $(function () {
     socket.on('end-anim', () => animInterval.clearInterval ? animInterval.clearInterval() : null)
 
     animateInputs()
-    // guessData = mockData
-    // cards = {
-    //     'top-left': [],
-    //     'top-right': [],
-    //     'bottom-left': [],
-    //     'bottom-right': [],
-    //     unplaced: []
-    // }
-    // for (let key of Object.keys(cards)) {
-    //     if (key === 'unplaced') continue
-    //     cards.unplaced.push(guessData.clover[key].words)
-    // }
-    // cards.unplaced.push(guessData.clover.extra.words)
-    // cards.unplaced = shuffle(cards.unplaced)
-    // clues = guessData.answers.clueKey
-    // redrawGuess()
 })
