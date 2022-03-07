@@ -7,8 +7,8 @@ const app = express()
 const _WORDS = require('./static/word-list.json')
 const _PORT = process.env.PORT || 3000
 
-const players = {}
-const playerNames = []
+let players = {}
+let playerNames = []
 let philID
 let guessing = false
 let answersSnapshot = []
@@ -155,6 +155,15 @@ io.on('connection', socket => {
         if (disconnector) {
             players[disconnector].disconnected = true
             playerNames.splice(playerNames.indexOf(disconnector), 1)
+        }
+        if (!playerNames.length) {
+            players = {}
+            playerNames = []
+            philID = undefined
+            guessing = false
+            answersSnapshot = []
+            usedCards = []
+            answersIdx = -1
         }
         console.log(`${disconnector || 'someone'} disconnected`)
     })
