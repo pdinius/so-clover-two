@@ -7,12 +7,12 @@ const app = express()
 const _WORDS = require('./static/word-list.json')
 const _PORT = process.env.PORT || 3000
 
-const usedCards = []
 const players = {}
 const playerNames = []
 let philID
 let guessing = false
 let answersSnapshot = []
+let usedCards = []
 let answersIdx = -1
 
 app.use(express.static('public'))
@@ -34,7 +34,7 @@ function newCard() {
 }
 
 function getFinishedPlayerPartition() {
-    return playerNames.reduce((a,b) => {
+    return playerNames.reduce((a, b) => {
         players[b].answers ? a[0].push(b) : a[1].push(b)
         return a
     }, [[], []])
@@ -52,6 +52,10 @@ function currCloverGuess() {
     }
 }
 
+function offsetter(arr, offset) {
+    return arr.slice(offset).concat(arr.slice(0, offset))
+}
+
 io.on('connection', socket => {
     // console.log(socket.handshake.headers.referer)
     io.to(socket.id).emit('disconnected-users', Object.keys(players).filter(v => players[v].disconnected))
@@ -60,7 +64,7 @@ io.on('connection', socket => {
         if (players[name]) {
             io.to(socket.id).emit('showAlert', 'That name is already in use!')
         } else {
-            const offsetter = (arr, offset) => arr.slice(offset).concat(arr.slice(0, offset))
+            if (name === 'Phil') philID = socket.id
             playerNames.push(name)
             players[name] = {
                 name,
@@ -80,7 +84,6 @@ io.on('connection', socket => {
                 'bottom-left': offsetter(players[name].clover['bottom-left'].words, players[name].clover['bottom-left'].offset),
                 'bottom-right': offsetter(players[name].clover['bottom-right'].words, players[name].clover['bottom-right'].offset),
             }
-            if (name === 'Phil') philID = socket.id
             io.to(socket.id).emit('send-clover', cloverToSend)
         }
     })
@@ -93,6 +96,7 @@ io.on('connection', socket => {
             philID = socket.id
             if (guessing) {
                 io.to(philID).emit('lets-make-guesses', currCloverGuess())
+                return
             }
         }
         if (!players[name].answers) {
@@ -115,6 +119,34 @@ io.on('connection', socket => {
             io.emit('end-anim')
             io.to(philID).emit('lets-make-guesses', nextCloverGuess())
         }
+    })
+
+    socket.on('get-next-clover', () => {
+        io.to(philID).emit('lets-make-guesses', nextCloverGuess())
+    })
+
+    socket.on('start-new-round', () => {
+        guessing = false
+        answersSnapshot = []
+        usedCards = []
+        answersIdx = -1
+        playerNames.forEach(name => {
+            players[name].clover = {
+                'top-left': newCard(),
+                'top-right': newCard(),
+                'bottom-left': newCard(),
+                'bottom-right': newCard(),
+                'extra': newCard()
+            }
+            let cloverToSend = {
+                'top-left': offsetter(players[name].clover['top-left'].words, players[name].clover['top-left'].offset),
+                'top-right': offsetter(players[name].clover['top-right'].words, players[name].clover['top-right'].offset),
+                'bottom-left': offsetter(players[name].clover['bottom-left'].words, players[name].clover['bottom-left'].offset),
+                'bottom-right': offsetter(players[name].clover['bottom-right'].words, players[name].clover['bottom-right'].offset),
+            }
+            delete players[name].answers
+            io.to(players[name].id).emit('send-clover', cloverToSend)
+        })
     })
 
     socket.on('disconnect', () => {

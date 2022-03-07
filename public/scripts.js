@@ -61,10 +61,10 @@ const mockData = {
             'right': ",nmb",
             'left': "hgfd",
         },
-        "poiu": "Bench-Glove",
-        "lkjh": "Loop-Axe",
-        ",nmb": "Shape-Club",
-        "hgfd": "Board-Camera"
+        "poiu": ['Bench', 'Glove'],
+        "lkjh": ['Loop', 'Axe'],
+        ",nmb": ['Shape', 'Club'],
+        "hgfd": ['Board', 'Camera'],
     }
 }
 
@@ -136,7 +136,16 @@ $(function () {
     }
 
     function updateCardArrows() {
-        
+        $('.corner-arrow').on('click', function() {
+            let arrow = $(this).attr('class').match(/(top|bottom)-(left|right)/)[0]
+            if (cards[arrow].length) {
+                cards[arrow].unshift(cards[arrow].pop())
+            }
+            console.log('trying to rotate!!')
+            $(`#${arrow}-card`).addClass('transitions').css('transform', 'rotate(90deg)')
+            setTimeout(() => $('.card').removeClass('transitions'), 200)
+            setTimeout(redrawGuess, 200)
+        })
     }
 
     function submitClues() {
@@ -181,20 +190,12 @@ $(function () {
                 'right': currClues[2],
                 'left': currClues[3],
             },
-            [currClues[0]]: `${cards['top-left'][0]}-${cards['top-right'][0]}`,
-            [currClues[1]]: `${cards['bottom-right'][2]}-${cards['bottom-left'][2]}`,
-            [currClues[2]]: `${cards['top-right'][1]}-${cards['bottom-right'][1]}`,
-            [currClues[3]]: `${cards['bottom-left'][3]}-${cards['top-left'][3]}`,
+            [currClues[0]]: [cards['top-left'][0], cards['top-right'][0]],
+            [currClues[1]]: [cards['bottom-right'][2], cards['bottom-left'][2]],
+            [currClues[2]]: [cards['top-right'][1], cards['bottom-right'][1]],
+            [currClues[3]]: [cards['bottom-left'][3], cards['top-left'][3]],
         }
         socket.emit('submit-clues', answerKey)
-    }
-
-    function philGuessing () {
-        $('.card').draggable({
-            revert: true,
-            revertDuration: 200,
-            zIndex: 999,
-        })
     }
 
     function redrawClover() {
@@ -203,10 +204,107 @@ $(function () {
         animateInputs(redrawClover)
     }
 
+    function swapCards(cardA, cardB, cardAOffset = $(cardA).offset(), cardBOffset = $(cardB).offset()) {
+        
+        $(cardA).addClass('transitions').css({
+            top: cardBOffset.top - cardAOffset.top,
+            left: cardBOffset.left - cardAOffset.left,
+        })
+        $(cardB).draggable({
+            revert: false
+        }).addClass('transitions').css({
+            top: cardAOffset.top - cardBOffset.top,
+            left: cardAOffset.left - cardBOffset.left,
+        })
+
+        // swap cards in model
+        let cardAName = $(cardA).attr('id')
+        let cardBName = $(cardB).attr('id')
+        console.log(cardAName, cardBName)
+        if (cardAName.includes('unplaced') && cardBName.includes('unplaced')) {
+            // swap 2 unplaced
+            let idx1 = cardAName.slice(-1)
+            let idx2 = cardBName.slice(-1)
+            let temp = cards.unplaced[idx1]
+            cards.unplaced[idx1] = cards.unplaced[idx2]
+            cards.unplaced[idx2] = temp
+        } else if (!cardAName.includes('unplaced') && !cardBName.includes('unplaced')) {
+            // swap 2 placed
+            let idx1 = cardAName.slice(0,-5)
+            let idx2 = cardBName.slice(0,-5)
+            let temp = cards[idx1]
+            cards[idx1] = cards[idx2]
+            cards[idx2] = temp
+        } else {
+            // swap 1 of each
+            let idx1, idx2
+            if (cardAName.includes('unplaced')) {
+                idx1 = cardAName.slice(-1)
+                idx2 = cardBName.slice(0,-5)
+            } else {
+                idx1 = cardBName.slice(-1)
+                idx2 = cardAName.slice(0,-5)
+            }
+            let temp = cards.unplaced[idx1]
+            cards.unplaced[idx1] = cards[idx2]
+            cards[idx2] = temp
+        }
+        setTimeout(redrawGuess, 200)
+    }
+
     function redrawGuess() {
         $('.lower-container').html(makeGuessCard(cards, clues))
         updateButtons(redrawGuess)
         updateCardArrows()
+        $('.card').draggable({
+            revert: true,
+            revertDuration: 200,
+            zIndex: 999
+        }).droppable({
+            drop: (event, ui) => {
+                // let containerOffset         
+                let dropped = event.target
+                let dragged = ui.draggable[0]       
+                let originalDragPosition = {
+                    top: $(dragged).offset().top - ui.position.top,
+                    left: $(dragged).offset().left - ui.position.left,
+                }
+                swapCards(dropped, dragged, $(dropped).offset(), originalDragPosition)
+            }
+        })
+
+        $('.submit-guess').on('click', () => {
+            let corners = ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            if (corners.every(v => cards[v].length)) {
+                let sides = {
+                    top: [cards['top-left'][0], cards['top-right'][0]],
+                    right: [cards['top-right'][1], cards['bottom-right'][1]],
+                    bottom: [cards['bottom-right'][2], cards['bottom-left'][2]],
+                    left: [cards['bottom-left'][3], cards['top-left'][3]],
+                }
+                let correct = {
+                    'top-left': guessData.answers[clues.top][0] === sides.top[0],
+                    'top-right': guessData.answers[clues.top][1] === sides.top[1],
+                    'bottom-left': guessData.answers[clues.bottom][1] === sides.bottom[1],
+                    'bottom-right': guessData.answers[clues.bottom][0] === sides.bottom[0],
+                }
+                let blanks = $('.unplaced-cards > .blank-card').toArray()
+                let idx = 0
+                for (let [key, value] of Object.entries(correct)) {
+                    if (!value) {
+                        swapCards($(`#${key}-card`), $(blanks[idx++]))
+                    }
+                }
+                if (Object.values(correct).every(v => v)) {
+                    showAlert('Correct!!')
+                    $('.submit-guess').html(isLastGuess ? 'New Round' : 'Next Clover').on('click', () => {
+                        socket.emit(isLastGuess ? 'start-new-round' : 'get-next-clover')
+                    })
+                }
+            } else {
+                showAlert('The clover must be filled before you can guess.')
+            }
+        })
     }
 
     function redrawWaitingRoom([fin, unfin]) {
@@ -301,9 +399,9 @@ $(function () {
     })
 
     socket.on('lets-make-guesses', ({ cloverData, isLast }) => {
+        $('.title-append').html(`&nbsp;- ${cloverData.name}`)
         guessData = cloverData
         isLastGuess = isLast
-        clues = cloverData.answers.clueKey
         cards = {
             'top-left': [],
             'top-right': [],
@@ -321,23 +419,23 @@ $(function () {
         redrawGuess()
     })
 
-    socket.on('end-anim', () => animInterval.clearInterval())
+    socket.on('end-anim', () => animInterval.clearInterval ? animInterval.clearInterval() : null)
 
     animateInputs()
-    guessData = mockData
-    cards = {
-        'top-left': [],
-        'top-right': [],
-        'bottom-left': [],
-        'bottom-right': [],
-        unplaced: []
-    }
-    for (let key of Object.keys(cards)) {
-        if (key === 'unplaced') continue
-        cards.unplaced.push(guessData.clover[key].words)
-    }
-    cards.unplaced.push(guessData.clover.extra.words)
-    cards.unplaced = shuffle(cards.unplaced)
-    clues = guessData.answers.clueKey
-    redrawGuess()
+    // guessData = mockData
+    // cards = {
+    //     'top-left': [],
+    //     'top-right': [],
+    //     'bottom-left': [],
+    //     'bottom-right': [],
+    //     unplaced: []
+    // }
+    // for (let key of Object.keys(cards)) {
+    //     if (key === 'unplaced') continue
+    //     cards.unplaced.push(guessData.clover[key].words)
+    // }
+    // cards.unplaced.push(guessData.clover.extra.words)
+    // cards.unplaced = shuffle(cards.unplaced)
+    // clues = guessData.answers.clueKey
+    // redrawGuess()
 })

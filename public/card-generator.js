@@ -61,21 +61,22 @@ function makeCard(cards, clues) {
 }
 
 function makeGuessCard(cards, clues) {
-    const makeString = words => `<div class="card">
+    const makeString = (words, id) => {
+        return words.length ? `<div class="card"${id ? ` id="${id}"` : ''}>
         <div class="word">${words[0]}</div>
         <div class="word flip">${words[2]}</div>
         <div class="left-right-card">
             <div class="word">${words[1]}</div>
             <div class="word flip">${words[3]}</div>
         </div>
-    </div>`
-    const blankString = `<div class="card blank-card"></div>`
+    </div>` : `<div class="card blank-card"${id ? ` id="${id}"` : ''}></div>`
+    }
     let cardStrings = {
-        'top-left': cards['top-left'].length ? makeString(cards['top-left']) : blankString,
-        'top-right': cards['top-right'].length ? makeString(cards['top-right']) : blankString,
-        'bottom-left': cards['bottom-left'].length ? makeString(cards['bottom-left']) : blankString,
-        'bottom-right': cards['bottom-right'].length ? makeString(cards['bottom-right']) : blankString,
-        'unplaced': cards.unplaced.map(v => v.length ? makeString(v) : blankString).join('')
+        'top-left': makeString(cards['top-left'], 'top-left-card'),
+        'top-right': makeString(cards['top-right'], 'top-right-card'),
+        'bottom-left': makeString(cards['bottom-left'], 'bottom-left-card'),
+        'bottom-right': makeString(cards['bottom-right'], 'bottom-right-card'),
+        'unplaced': cards.unplaced.map((v,i) => makeString(v, `unplaced-card-${i}`)).join('')
     }
     return `<div class="game-area">
         <div class="left-spacer"></div>
