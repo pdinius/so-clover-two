@@ -149,6 +149,16 @@ io.on('connection', socket => {
         })
     })
 
+    socket.on('reset-game', () => {
+        players = {}
+        playerNames = []
+        philID = undefined
+        guessing = false
+        answersSnapshot = []
+        usedCards = []
+        answersIdx = -1
+    })
+
     socket.on('disconnect', () => {
         // find who disconnected
         let disconnector = playerNames.find(v => players[v].id === socket.id)

@@ -362,3 +362,23 @@ input {
     right: 2.5em;
     transform: rotate(180deg);
 }
+
+/* secret reset button */
+
+.top-content {
+    display: flex;
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.right-top-content {
+    justify-content: flex-end;
+}
+
+.reset-button {
+    margin: auto 1em auto 0;
+}
+
+.middle-top-content {
+    justify-content: center;
+}

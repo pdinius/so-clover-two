@@ -1,74 +1,3 @@
-const mockData = {
-    "name": "NotPhil",
-    "id": "8OZvbT9m0hYiD1n-AAAJ",
-    "clover": {
-        "top-left": {
-            "id": 108,
-            "words": [
-                "Camera",
-                "Bench",
-                "Patron",
-                "Stud"
-            ],
-            "offset": 1
-        },
-        "top-right": {
-            "id": 161,
-            "words": [
-                "Ground",
-                "Asia",
-                "Glove",
-                "Shape"
-            ],
-            "offset": 2
-        },
-        "bottom-left": {
-            "id": 116,
-            "words": [
-                "Union",
-                "Axe",
-                "Board",
-                "Button"
-            ],
-            "offset": 3
-        },
-        "bottom-right": {
-            "id": 155,
-            "words": [
-                "Loop",
-                "Stylist",
-                "Pyramid",
-                "Club"
-            ],
-            "offset": 2
-        },
-        "extra": {
-            "id": 107,
-            "words": [
-                "Mother",
-                "Match",
-                "Rope",
-                "Paradise"
-            ],
-            "offset": 0
-        }
-    },
-    "disconnected": false,
-    "answers": {
-        clueKey: {
-            'top': "poiu",
-            'bottom': "lkjh",
-            'right': ",nmb",
-            'left': "hgfd",
-        },
-        "poiu": ['Bench', 'Glove'],
-        "lkjh": ['Loop', 'Axe'],
-        ",nmb": ['Shape', 'Club'],
-        "hgfd": ['Board', 'Camera'],
-    }
-}
-
-
 $(function () {
     const socket = io()
     const corners = ['top-left', 'top-right', 'bottom-right', 'bottom-left']    
@@ -372,6 +301,12 @@ $(function () {
             showAlert('Name cannot be blank.')
         } else {
             socket.emit('name-selection', name)
+            if (name === 'Phil') {
+                $('.right-top-content').append(`<button class="reset-button">reset</button>`)
+                $('.reset-button').on('click', () =>{
+                    socket.emit('reset-game')
+                })
+            }
         }
     })
 
@@ -390,7 +325,15 @@ $(function () {
     })
 
     socket.on('send-clover', clover => {
+        clues  = {
+            right: '',
+            left: '',
+            bottom: '',
+            top: '',
+        }
         guessData = undefined
+        isLastGuess = undefined
+        animInterval = undefined
         cards = clover
         redrawClover()
     })
